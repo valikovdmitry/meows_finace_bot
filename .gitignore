@@ -10,3 +10,5 @@ tests/
 
 # Игнорируем папку .idea (настройки PyCharm)
 .idea/
+__pycache__/
+.DS_Store
