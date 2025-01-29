@@ -14,7 +14,7 @@ async def update(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text("Готовченко!", parse_mode="HTML")
 
 
-async def update_self() -> None:
+def update_self() -> None:
     data = get_categories(get_service(), SPREADSHEET_ID)
     save_data_to_file(data)
     return
