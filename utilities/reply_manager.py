@@ -1,4 +1,6 @@
-def prepare_reply(m_sum, m_cat, m_desc):
+
+
+def format_reply(m_sum, m_cat, m_desc):
     # Форматируем число, добавляем разделитель тысяч и два знака после запятой
     formatted_number = f"{float(m_sum):,.2f}"
     # Заменяем запятую на точку для разделителей тысяч
@@ -11,4 +13,3 @@ def prepare_reply(m_sum, m_cat, m_desc):
         text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formatted_number} ₽\n\n\nМявс!"
 
     return text
-

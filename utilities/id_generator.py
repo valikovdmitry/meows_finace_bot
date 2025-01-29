@@ -1,8 +1,6 @@
-from auth import get_service
-from load_from_env import spreadsheets_id
 
 
-def id_gen(value):
+def get_id(value):
     values_int_only = []
 
     for sublist in value:
@@ -15,4 +13,4 @@ def id_gen(value):
         return 1
 
 if __name__ == '__main__':
-    id_gen()
+    get_id()

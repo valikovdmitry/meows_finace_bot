@@ -1,4 +1,4 @@
-from func_sheets import load_data_from_file
+from utilities.file_manager import load_data_from_file
 
 
 def find_keywords_in_message(message, keyword_dict):

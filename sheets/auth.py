@@ -1,8 +1,8 @@
 from oauth2client.service_account import ServiceAccountCredentials
 import httplib2
 import apiclient.discovery
+from config import CREDENTIALS_FILE
 
-CREDENTIALS_FILE = 'data/creds.json'
 
 def get_service():
     credentials = ServiceAccountCredentials.from_json_keyfile_name(

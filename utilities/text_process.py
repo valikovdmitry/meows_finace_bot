@@ -1,9 +1,7 @@
-from auth import get_service
-from load_from_env import spreadsheets_id
-from func_sheets import load_data_from_file
 
-text = "245,67 ату кофе продукты"
-#print(text)
+
+from utilities.file_manager import load_data_from_file
+
 
 def find_args(text):
     # Разбиваем строку на части по запятой
