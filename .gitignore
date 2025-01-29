@@ -3,4 +3,10 @@
 
 # Персональные данные
 *.env
-data/creds.json
+data/
+
+# Тестовые скрипты
+tests/
+
+# Игнорируем папку .idea (настройки PyCharm)
+.idea/

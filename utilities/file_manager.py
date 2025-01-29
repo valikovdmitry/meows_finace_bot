@@ -1,9 +1,11 @@
 import json
 import os
 
+from config import SHEETS_DUMP_FILE
+
 
 # Функция записи актуального списка категорий в JSON-файл
-def save_data_to_file(data, file_path = os.path.join("../data", "sheets_dump.json")):
+def save_data_to_file(data, file_path = SHEETS_DUMP_FILE):
     # Проверяем, существует ли папка
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -13,7 +15,7 @@ def save_data_to_file(data, file_path = os.path.join("../data", "sheets_dump.jso
     print(f"Данные успешно сохранены в {file_path}")
 
 # Функция чтения актуального списка категорий в JSON-файл
-def load_data_from_file(file_path = 'data/sheets_dump.json'):
+def load_data_from_file(file_path = SHEETS_DUMP_FILE):
     if not os.path.exists(file_path):
         print(f"Файл {file_path} не найден.")
         return None

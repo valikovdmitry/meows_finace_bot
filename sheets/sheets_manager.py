@@ -1,4 +1,3 @@
-from sheets.auth import get_service
 from utilities.id_generator import get_id
 import datetime
 from config import SPREADSHEET_ID
