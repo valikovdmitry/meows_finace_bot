@@ -1,5 +1,3 @@
-
-
 def format_reply(m_sum, m_cat, m_desc):
     # Форматируем число, добавляем разделитель тысяч и два знака после запятой
     formatted_number = f"{float(m_sum):,.2f}"

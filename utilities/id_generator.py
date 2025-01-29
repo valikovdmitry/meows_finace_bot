@@ -1,5 +1,3 @@
-
-
 def get_id(value):
     values_int_only = []
 

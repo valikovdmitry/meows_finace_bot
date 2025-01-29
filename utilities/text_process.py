@@ -1,5 +1,3 @@
-
-
 from utilities.file_manager import load_data_from_file
 
 
