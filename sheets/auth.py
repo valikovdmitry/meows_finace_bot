@@ -5,6 +5,7 @@ from config import CREDENTIALS_FILE
 
 
 def get_service():
+    print(CREDENTIALS_FILE)
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
         CREDENTIALS_FILE,
         ['https://www.googleapis.com/auth/spreadsheets',
@@ -12,3 +13,5 @@ def get_service():
     http_auth = credentials.authorize(httplib2.Http())
     service = apiclient.discovery.build('sheets', 'v4', http=http_auth)
     return service
+
+get_service()
