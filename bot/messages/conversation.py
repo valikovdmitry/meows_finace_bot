@@ -23,8 +23,8 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
         return WAITING_FOR_CATEGORY
     else:
         # Записываем данные в таблицу с обновленной категорией
-        write_transaction(m_sum, m_cat, m_desc, get_service([0]))
-        http_auth = get_service([1])
+        write_transaction(m_sum, m_cat, m_desc, get_service()[0])
+        http_auth = get_service()[1]
         http_auth.close()
 
         # Подтверждаем запись и выводим введенные данные

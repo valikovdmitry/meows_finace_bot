@@ -74,5 +74,5 @@ def get_categories(service, SPREADSHEET_ID):
     return dict_val
 
 
-if __name__ == '__main__':
-    write_transaction()
+# if __name__ == '__main__':
+#     write_transaction()

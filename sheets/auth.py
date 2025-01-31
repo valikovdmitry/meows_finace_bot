@@ -16,4 +16,4 @@ def get_service():
 
     return service, http_auth
 
-get_service()
+print(get_service()[0])
