@@ -2,7 +2,7 @@ version: '3'
 
 services:
   bot:
-    image: python:3.10
+    image: python:3.12.6
     container_name: finance_bot
     restart: always
     working_dir: /app
