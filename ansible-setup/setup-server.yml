@@ -1,0 +1,32 @@
+- hosts: all  # Указываем, что команды будут выполняться для всех серверов из inventory
+  become: yes  # Запускаем команды с правами root
+  tasks:
+
+    - name: Обновляем кеш пакетов и устанавливаем обновления
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Устанавливаем Docker, Docker Compose и Git
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - git
+        state: present
+
+    - name: Запускаем и включаем автозапуск Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Клонируем репозиторий с ботом
+      git:
+        repo: "https://github.com/valikovdmitry/meows_finace_bot.git"
+        dest: "/root/meows_finace_bot"
+
+    - name: Запускаем докер-контейнер с ботом
+      command: docker-compose up -d
+      args:
+        chdir: /root/meows_finace_bot
