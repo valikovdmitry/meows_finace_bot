@@ -5,8 +5,8 @@ def find_args(text):
     # Разбиваем строку на части по запятой
     data_parts = [part.strip() for part in text.split(" ")]
 
-    sum = 0
     # находим первый int или не str = сумма
+    sum = 0
     for word in data_parts:
         if word.isdigit():
             sum = float(word)
@@ -24,7 +24,6 @@ def find_args(text):
     text = " ".join(data_parts)
 
     dict_val = load_data_from_file()
-
     result_options = []
 
     for key, value in dict_val.items():
@@ -79,5 +78,3 @@ def find_category(text):
     cat = result[2]
 
     return cat
-
-#print(find_args(text))

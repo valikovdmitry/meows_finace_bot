@@ -1,18 +1,23 @@
+import gc
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
+
 from bot.states import WAITING_FOR_CATEGORY
-from sheets.auth import get_service
 from sheets.sheets_manager import write_transaction
 from utilities.text_process import find_category
 from utilities.reply_manager import format_reply
 
 
 async def handle_category(update: Update, context: CallbackContext) -> int:
+    service = context.bot_data.get("service")
+    http_auth = context.bot_data.get("http_auth")
+
     message = update.message.text  # Получаем новую категорию от пользователя
     m_cat = find_category(message)
     m_sum = context.user_data["m_sum"]
     m_desc = context.user_data["m_desc"]
+
     if m_cat == '- Нераспознанное':
         await update.message.reply_text(
             f"Хозяин, не вижу категорию, уточни! 🥺 "
@@ -23,9 +28,10 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
         return WAITING_FOR_CATEGORY
     else:
         # Записываем данные в таблицу с обновленной категорией
-        write_transaction(m_sum, m_cat, m_desc, get_service()[0])
-        http_auth = get_service()[1]
+        write_transaction(m_sum, m_cat, m_desc, service, http_auth)
+
         http_auth.close()
+        gc.collect()
 
         # Подтверждаем запись и выводим введенные данные
         reply_text = format_reply(m_sum, m_cat, m_desc)

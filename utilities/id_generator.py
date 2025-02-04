@@ -9,6 +9,3 @@ def get_id(value):
         return max(values_int_only) + 1
     else:
         return 1
-
-if __name__ == '__main__':
-    get_id()
