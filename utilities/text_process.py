@@ -9,7 +9,7 @@ def find_args(text):
     # находим первый int или не str = сумма
     for word in data_parts:
         if word.isdigit():
-            sum = float(word)
+            sum = float(word) * 1000
             data_parts.remove(word)
             break
         if not word.isalpha():
