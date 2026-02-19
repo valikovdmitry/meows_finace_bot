@@ -24,6 +24,8 @@ def find_args(text):
     text = " ".join(data_parts)
 
     dict_val = load_data_from_file()
+    if not dict_val:
+        return sum, "- Нераспознанное", text
 
     result_options = []
 
@@ -54,6 +56,9 @@ def find_args(text):
 
 def find_category(text):
     dict_val = load_data_from_file()
+    if not dict_val:
+        return "- Нераспознанное"
+
     result_options = []
 
     for key, value in dict_val.items():
@@ -75,7 +80,6 @@ def find_category(text):
         if idx < result[0]:
             result = (idx, lens, cat)
 
-    text = text[:result[0]] + text[result[0] + result[1] + 1:]
     cat = result[2]
 
     return cat

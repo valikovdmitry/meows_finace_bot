@@ -21,9 +21,11 @@ async def process_data(update: Update, context: CallbackContext) -> int:
 
     # Обработка данных на предмет текстовой команды
     if user_message.lower() == "удали":
-        delete_last_transaction(get_service()[0], SPREADSHEET_ID)
-        http_auth = get_service()[1]
-        http_auth.close()
+        service, http_auth = get_service()
+        try:
+            delete_last_transaction(service, SPREADSHEET_ID)
+        finally:
+            http_auth.close()
         await delete_last_three_messages(update, context)
         return ConversationHandler.END
 
@@ -45,9 +47,11 @@ async def process_data(update: Update, context: CallbackContext) -> int:
         return WAITING_FOR_CATEGORY
     else:
         # Записываем данные в таблицу
-        write_transaction(m_sum, m_cat, m_desc, get_service()[0])
-        http_auth = get_service()[1]
-
+        service, http_auth = get_service()
+        try:
+            write_transaction(m_sum, m_cat, m_desc, service)
+        finally:
+            http_auth.close()
 
         # Отправляем подтверждение и введенные данные
         reply_text = format_reply(m_sum, m_cat, m_desc)
@@ -58,5 +62,4 @@ async def process_data(update: Update, context: CallbackContext) -> int:
         elapsed_time = end - start
         print(f"Время выполнения: {elapsed_time:.2f} секунд")
 
-        http_auth.close()
         return ConversationHandler.END

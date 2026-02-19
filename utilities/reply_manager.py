@@ -1,12 +1,4 @@
 def format_reply(m_sum, m_cat, m_desc):
-
-    # Форматируем число, добавляем разделитель тысяч и два знака после запятой
-    formatted_number = f"{float(m_sum):,.0f}"
-
-    # Заменяем запятую на точку для разделителей тысяч
-    formatted_number = formatted_number.replace(",", " ")
-    formatted_number = formatted_number[:-3] + formatted_number[-3:].replace(".", ",")
-
     formated_vnd = sum_format(m_sum, 0)
 
     rub = m_sum / 1000 * 3

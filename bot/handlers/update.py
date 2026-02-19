@@ -9,18 +9,22 @@ from utilities.file_manager import save_data_to_file
 
 async def update(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text("Обновляюсь!", parse_mode="HTML")
-    data = get_categories(get_service()[0], SPREADSHEET_ID)
-    http_auth = get_service()[1]
-    http_auth.close()
+    service, http_auth = get_service()
+    try:
+        data = get_categories(service, SPREADSHEET_ID)
+    finally:
+        http_auth.close()
 
     save_data_to_file(data)
     await update.message.reply_text("Готовченко!", parse_mode="HTML")
 
 
 def update_self() -> None:
-    data = get_categories(get_service()[0], SPREADSHEET_ID)
-    http_auth = get_service()[1]
-    http_auth.close()
+    service, http_auth = get_service()
+    try:
+        data = get_categories(service, SPREADSHEET_ID)
+    finally:
+        http_auth.close()
 
     save_data_to_file(data)
     return
