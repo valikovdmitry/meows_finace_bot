@@ -8,9 +8,9 @@ def format_reply(m_sum, m_cat, m_desc):
     formated_usd = sum_format(usd)
 
     if m_desc:
-        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\nПримечание: {m_desc}\n\nМявс! 🐾"
+        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\nПримечание: {m_desc}\n\nМявс! 🐾\n\nЭто сообщение из новой версии приложения."
     else:
-        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\n\nМявс! 🐾"
+        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\n\nМявс! 🐾\n\nЭто сообщение из новой версии приложения."
 
     return text
 
