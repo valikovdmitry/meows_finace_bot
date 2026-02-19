@@ -18,7 +18,7 @@ def format_reply(m_sum, m_cat, m_desc):
     if m_desc:
         text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\nПримечание: {m_desc}\n\nМявс! 🐾"
     else:
-        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n\n\nМявс! 🐾"
+        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\n\nМявс! 🐾"
 
     return text
 
