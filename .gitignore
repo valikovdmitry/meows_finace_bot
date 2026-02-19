@@ -5,9 +5,6 @@
 *.env
 data/
 
-# Тестовые скрипты
-tests/
-
 # Игнорируем папку .idea (настройки PyCharm)
 .idea/
 __pycache__/

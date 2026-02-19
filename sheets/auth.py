@@ -15,5 +15,3 @@ def get_service():
     service = apiclient.discovery.build('sheets', 'v4', http=http_auth)
 
     return service, http_auth
-
-print(get_service()[0])
