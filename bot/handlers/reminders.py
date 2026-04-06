@@ -18,6 +18,10 @@ NO_FOLLOWUP = "Молодцы, это точно поможет в будуще�
 REMINDER_KB = ReplyKeyboardMarkup([["Да", "Нет"]], resize_keyboard=True, one_time_keyboard=True)
 
 
+def _job_queue(app: Application):
+    return app.job_queue
+
+
 def _state(app: Application):
     return app.bot_data.setdefault(
         "reminder_state",
@@ -48,7 +52,10 @@ async def _send_question(app: Application, chat_id: int):
 
 
 def _cancel_followups(app: Application, chat_id: int):
-    for job in app.job_queue.get_jobs_by_name(f"reminder_followup_{chat_id}"):
+    jq = _job_queue(app)
+    if jq is None:
+        return
+    for job in jq.get_jobs_by_name(f"reminder_followup_{chat_id}"):
         job.schedule_removal()
 
 
@@ -59,8 +66,11 @@ async def _start_cycle(app: Application, chat_id: int):
     state["active"] = True
     state["chat_id"] = chat_id
     await _send_question(app, chat_id)
+    jq = _job_queue(app)
+    if jq is None:
+        return
     _cancel_followups(app, chat_id)
-    app.job_queue.run_repeating(
+    jq.run_repeating(
         _followup_job,
         interval=dt.timedelta(minutes=15),
         first=dt.timedelta(minutes=15),
@@ -107,10 +117,13 @@ def ensure_daily_jobs(app: Application):
     state = _state(app)
     if state.get("daily_registered"):
         return
+    jq = _job_queue(app)
+    if jq is None:
+        return
 
     tz = ZoneInfo(BOT_TIMEZONE)
     for hour in (10, 16, 22):
-        app.job_queue.run_daily(
+        jq.run_daily(
             _daily_job,
             time=dt.time(hour=hour, minute=0, tzinfo=tz),
             name=f"reminder_daily_{hour}",
@@ -165,7 +178,10 @@ async def handle_reminder_reply(update: Update, context: CallbackContext) -> Non
         text=NO_FOLLOWUP,
         reply_markup=build_main_keyboard(),
     )
-    context.application.job_queue.run_once(
+    jq = _job_queue(context.application)
+    if jq is None:
+        return
+    jq.run_once(
         _delete_message_job,
         when=dt.timedelta(minutes=15),
         data={"chat_id": chat_id, "message_id": sent.message_id},

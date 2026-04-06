@@ -11,7 +11,8 @@ RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}"
 
 COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-root
+    && poetry install --no-root \
+    && pip install --no-cache-dir "python-telegram-bot[job-queue]==21.10"
 
 COPY . .
 
