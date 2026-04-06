@@ -5,6 +5,7 @@ from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import Application, CallbackContext
 
 from bot.utilities.keyboards import build_main_keyboard
+from bot.handlers.custom_reminders import schedule_all_custom_reminders
 from config import BOT_TIMEZONE
 from utilities.runtime_state import get_primary_chat_id, set_primary_chat_id
 
@@ -133,6 +134,7 @@ def ensure_daily_jobs(app: Application):
 
 async def on_startup_schedule(app: Application):
     ensure_daily_jobs(app)
+    schedule_all_custom_reminders(app)
     chat_id = get_primary_chat_id()
     if chat_id:
         _state(app)["chat_id"] = chat_id
