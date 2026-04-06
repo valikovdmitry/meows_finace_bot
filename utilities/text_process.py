@@ -17,6 +17,11 @@ def find_args(text):
     return amount, cat, desc.strip()
 
 
+def find_amount_and_description(text):
+    amount, text_without_amount = _extract_amount(text)
+    return amount, text_without_amount.strip()
+
+
 def find_category(text):
     cat, _alias = _match_category_with_alias(text)
     return cat
@@ -31,7 +36,7 @@ def _normalize_text(text):
 
 def _extract_amount(text):
     # Поддержка: 150 (как 150к), 150к, 150k, 120000, 120,5
-    match = re.search(r"(\d+(?:[.,]\d+)?)(?:\s*([кk]))?", text.lower())
+    match = re.search(r"(\d+(?:[.,]\d+)?)(?:\s*([кk])\b)?", text.lower())
     if not match:
         return 0, text
 
