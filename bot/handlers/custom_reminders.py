@@ -1,6 +1,7 @@
 import datetime as dt
 from zoneinfo import ZoneInfo
 
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CallbackContext
 
 from config import BOT_TIMEZONE
@@ -44,17 +45,41 @@ def _job_name(reminder_id: str):
     return f"custom_reminder_{reminder_id}"
 
 
+def _last_messages(app: Application):
+    return app.bot_data.setdefault("custom_reminder_last_messages", {})
+
+
+async def _safe_delete(bot, chat_id: int, message_id: int | None):
+    if not message_id:
+        return
+    try:
+        await bot.delete_message(chat_id=chat_id, message_id=message_id)
+    except Exception:
+        pass
+
+
 def _parse_iso(value: str):
     return dt.datetime.fromisoformat(value)
 
 
 async def _send_custom_reminder(context: CallbackContext):
     reminder = context.job.data.get("reminder", {})
+    reminder_id = reminder.get("id")
     chat_id = reminder.get("chat_id")
     text = reminder.get("text")
-    if not chat_id or not text:
+    if not chat_id or not text or not reminder_id:
         return
-    await context.bot.send_message(chat_id=chat_id, text=text)
+
+    messages = _last_messages(context.application)
+    prev = messages.get(reminder_id)
+    if prev:
+        await _safe_delete(context.bot, chat_id, prev.get("message_id"))
+
+    keyboard = InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text="Ок", callback_data=f"reminder_ok:{reminder_id}")]]
+    )
+    sent = await context.bot.send_message(chat_id=chat_id, text=text, reply_markup=keyboard)
+    messages[reminder_id] = {"chat_id": chat_id, "message_id": sent.message_id}
 
 
 def _unschedule(app: Application, reminder_id: str):
@@ -101,6 +126,8 @@ def schedule_reminder(app: Application, reminder: dict):
 
 def delete_scheduled_reminder(app: Application, reminder_id: str):
     _unschedule(app, reminder_id)
+    messages = _last_messages(app)
+    messages.pop(reminder_id, None)
 
 
 def schedule_all_custom_reminders(app: Application):
@@ -111,3 +138,22 @@ def schedule_all_custom_reminders(app: Application):
         if not reminder.get("active", True):
             continue
         schedule_reminder(app, reminder)
+
+
+async def handle_custom_reminder_ok(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    if not query or not query.data:
+        return
+
+    await query.answer()
+    reminder_id = query.data.split(":", 1)[1]
+
+    message = query.message
+    if message:
+        try:
+            await message.delete()
+        except Exception:
+            pass
+
+    messages = _last_messages(context.application)
+    messages.pop(reminder_id, None)

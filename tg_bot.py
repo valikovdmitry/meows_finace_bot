@@ -30,6 +30,7 @@ from bot.handlers.reminder_setup import (
     reminder_edit_start,
     reminders_list,
 )
+from bot.handlers.custom_reminders import handle_custom_reminder_ok
 from bot.handlers.reports import today_report, week_report, month_report, category_report
 from bot.handlers.process import process_data
 from bot.messages.conversation import (
@@ -94,6 +95,7 @@ def main() -> None:
     application.add_handler(CommandHandler("month", month_report))
     application.add_handler(CommandHandler("category", category_report))
     application.add_handler(CallbackQueryHandler(reminder_delete, pattern=r"^reminder_delete:"))
+    application.add_handler(CallbackQueryHandler(handle_custom_reminder_ok, pattern=r"^reminder_ok:"))
     application.add_handler(reminder_conv_handler)
     application.add_handler(CallbackQueryHandler(handle_post_save_action, pattern=r"^(undo_last|edit_last)$"))
     application.add_handler(CallbackQueryHandler(handle_category_button, pattern=r"^(catidx:\d+|cat_cancel|cat_show_all)$"))
