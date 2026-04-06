@@ -1,4 +1,4 @@
-def format_reply(m_sum, m_cat, m_desc):
+def format_reply(m_sum, m_cat, m_desc, elapsed_seconds=None):
     formated_vnd = sum_format(m_sum, 0)
 
     rub = m_sum / 1000 * 3
@@ -7,10 +7,14 @@ def format_reply(m_sum, m_cat, m_desc):
     usd = rub / 83
     formated_usd = sum_format(usd)
 
+    version_line = "Версия 1.0"
+    if elapsed_seconds is not None:
+        version_line = f"Версия 1.0 • {elapsed_seconds:.2f} сек"
+
     if m_desc:
-        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\nПримечание: {m_desc}\n\nМявс! 🐾\n\nВерсия 1.0"
+        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\nПримечание: {m_desc}\n\nМявс! 🐾\n\n{version_line}"
     else:
-        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\n\nМявс! 🐾\n\nВерсия 1.0"
+        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\n\nМявс! 🐾\n\n{version_line}"
 
     return text
 

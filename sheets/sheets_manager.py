@@ -1,37 +1,36 @@
-from utilities.id_generator import get_id
 import datetime
 from config import SPREADSHEET_ID
 
 
 # Запись транзакции в таблицу
 def write_transaction(amount, category, description, service):
-    # Получаем данные из первой колонки таблицы в виде листа
-    id_dict = service.spreadsheets().values().get(
-        spreadsheetId = SPREADSHEET_ID,
-        range="A1:A1000"  # Ограничиваем диапазон строками 1-1000
-    ).execute()
-    id_list = id_dict.get('values', [])
+    # Уникальный ID без дополнительного запроса к таблице.
+    transaction_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
+    transaction_date = datetime.date.today().strftime("%d.%m.%Y")
+    transaction_time = datetime.datetime.now().strftime("%H:%M:%S")
 
-    first_empty_row =  len(id_list) + 1  # Первая свободная строка (1-based index)
+    data_to_write = [
+        transaction_id,
+        transaction_date,
+        transaction_time,
+        amount,
+        category,
+        description,
+    ]
 
-    transaction_id = get_id(id_list)
-    transaction_date = datetime.date.today().strftime('%d.%m.%Y')
-    transaction_time = datetime.datetime.now().strftime('%H:%M:%S')
-
-    data_to_write = [transaction_id, transaction_date, transaction_time, amount, category, description]  # Шесть колонок
-
-    range_to_write = f"A{first_empty_row}:F{first_empty_row}"
-
-    response = service.spreadsheets().values().update(
-        spreadsheetId = SPREADSHEET_ID,
-        range=range_to_write,
+    response = service.spreadsheets().values().append(
+        spreadsheetId=SPREADSHEET_ID,
+        range="A:F",
         valueInputOption="USER_ENTERED",
+        insertDataOption="INSERT_ROWS",
         body={
             "values": [data_to_write]
-        }
+        },
     ).execute()
 
-    print(f"Данные записаны в строку {first_empty_row}: {data_to_write}")
+    updates = response.get("updates", {})
+    updated_range = updates.get("updatedRange", "A:F")
+    print(f"Данные записаны в диапазон {updated_range}: {data_to_write}")
 
 
 # Удаление последней транзакции

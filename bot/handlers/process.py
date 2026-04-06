@@ -1,4 +1,5 @@
 import time
+import asyncio
 
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
@@ -11,6 +12,17 @@ from sheets.sheets_manager import delete_last_transaction, write_transaction
 from utilities.text_process import find_args
 from utilities.reply_manager import format_reply
 
+
+def _delete_last_transaction_sync():
+    service = get_service()
+    delete_last_transaction(service, SPREADSHEET_ID)
+
+
+def _write_transaction_sync(m_sum, m_cat, m_desc):
+    service = get_service()
+    write_transaction(m_sum, m_cat, m_desc, service)
+
+
 async def process_data(update: Update, context: CallbackContext) -> int:
     # Запускаем таймер для оценки скорости работы
     start = time.time()
@@ -21,11 +33,7 @@ async def process_data(update: Update, context: CallbackContext) -> int:
 
     # Обработка данных на предмет текстовой команды
     if user_message.lower() == "удали":
-        service, http_auth = get_service()
-        try:
-            delete_last_transaction(service, SPREADSHEET_ID)
-        finally:
-            http_auth.close()
+        await asyncio.to_thread(_delete_last_transaction_sync)
         await delete_last_three_messages(update, context)
         return ConversationHandler.END
 
@@ -44,22 +52,18 @@ async def process_data(update: Update, context: CallbackContext) -> int:
         # Сохраняем данные в context для последующей обработки
         context.user_data["m_sum"] = m_sum
         context.user_data["m_desc"] = m_desc
+        context.user_data["start_time"] = start
         return WAITING_FOR_CATEGORY
     else:
         # Записываем данные в таблицу
-        service, http_auth = get_service()
-        try:
-            write_transaction(m_sum, m_cat, m_desc, service)
-        finally:
-            http_auth.close()
+        await asyncio.to_thread(_write_transaction_sync, m_sum, m_cat, m_desc)
 
+        elapsed_time = time.time() - start
         # Отправляем подтверждение и введенные данные
-        reply_text = format_reply(m_sum, m_cat, m_desc)
+        reply_text = format_reply(m_sum, m_cat, m_desc, elapsed_time)
         await update.message.reply_text(reply_text, parse_mode="HTML")
 
-        # Останавливаем таймер и выводим время выполнения задачи
-        end = time.time()
-        elapsed_time = end - start
+        # Выводим время выполнения задачи
         print(f"Время выполнения: {elapsed_time:.2f} секунд")
 
         return ConversationHandler.END
