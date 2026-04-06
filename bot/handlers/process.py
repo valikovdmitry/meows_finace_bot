@@ -6,11 +6,12 @@ from telegram.ext import CallbackContext, ConversationHandler
 
 from config import SPREADSHEET_ID
 from bot.states import WAITING_FOR_CATEGORY
+from bot.utilities.keyboards import build_category_keyboard
 from bot.utilities.delete import delete_last_three_messages
+from bot.messages.conversation import send_success_message
 from sheets.auth import get_service
 from sheets.sheets_manager import delete_last_transaction, write_transaction
 from utilities.text_process import find_args
-from utilities.reply_manager import format_reply
 
 
 def _delete_last_transaction_sync():
@@ -46,12 +47,12 @@ async def process_data(update: Update, context: CallbackContext) -> int:
     m_sum, m_cat, m_desc = find_args(user_message)
 
     if m_cat == "- Нераспознанное":
-        await update.message.reply_text(
-            f"Хозяин, не вижу категорию, уточни! 🥺 "
+        await update.effective_chat.send_message(
+            "Хозяин, не вижу категорию, уточни! 🥺",
+            reply_markup=build_category_keyboard(),
         )
         # Сохраняем данные в context для последующей обработки
-        context.user_data["m_sum"] = m_sum
-        context.user_data["m_desc"] = m_desc
+        context.user_data["pending_tx"] = {"m_sum": m_sum, "m_desc": m_desc}
         context.user_data["start_time"] = start
         return WAITING_FOR_CATEGORY
     else:
@@ -60,8 +61,7 @@ async def process_data(update: Update, context: CallbackContext) -> int:
 
         elapsed_time = time.time() - start
         # Отправляем подтверждение и введенные данные
-        reply_text = format_reply(m_sum, m_cat, m_desc, elapsed_time)
-        await update.effective_chat.send_message(reply_text, parse_mode="HTML")
+        await send_success_message(update, context, m_sum, m_cat, m_desc, elapsed_time)
 
         # Выводим время выполнения задачи
         print(f"Время выполнения: {elapsed_time:.2f} секунд")

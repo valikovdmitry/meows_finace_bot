@@ -73,5 +73,14 @@ def get_categories(service, SPREADSHEET_ID):
     return dict_val
 
 
+def get_transactions(service, SPREADSHEET_ID):
+    result = service.spreadsheets().values().get(
+        spreadsheetId=SPREADSHEET_ID,
+        range="A2:F10000",
+        valueRenderOption="UNFORMATTED_VALUE",
+    ).execute()
+    return result.get("values", [])
+
+
 # if __name__ == '__main__':
 #     write_transaction()

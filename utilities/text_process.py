@@ -1,87 +1,89 @@
 from utilities.file_manager import load_data_from_file
+import re
 
 
 def find_args(text):
-    # Разбиваем строку на части по запятой
-    data_parts = [part.strip() for part in text.split(" ")]
-
-    sum = 0
-    # находим первый int или не str = сумма
-    for word in data_parts:
-        if word.isdigit():
-            sum = float(word) * 1000
-            data_parts.remove(word)
-            break
-        if not word.isalpha():
-            word_pre_convert = word.replace(",", ".")
-            data_parts.remove(word)
-            sum = float(word_pre_convert)
-            break
-
-    if not sum:
+    amount, text_without_amount = _extract_amount(text)
+    if not amount:
         return 0, 0, 0
 
-    text = " ".join(data_parts)
+    cat, cat_alias = _match_category_with_alias(text_without_amount)
+    if cat == "- Нераспознанное":
+        return amount, cat, text_without_amount.strip()
 
-    dict_val = load_data_from_file()
-    if not dict_val:
-        return sum, "- Нераспознанное", text
-
-    result_options = []
-
-    for key, value in dict_val.items():
-        clean_value_lower = value.lower()
-        clean_value_list = [part.strip() for part in clean_value_lower.split(",")]
-
-        for item in clean_value_list:
-
-            if item in text.lower() and item:
-                result_options.append((text.lower().index(item), len(item), key))
-
-    if not result_options:
-        cat = '- Нераспознанное'
-        return sum, cat, text
-
-    result = result_options[0]
-
-    for idx, lens, cat in result_options:
-        if idx < result[0]:
-            result = (idx, lens, cat)
-
-    text = text[:result[0]] + text[result[0] + result[1] + 1:]
-    cat = result[2]
-
-    return sum, cat, text
+    desc = text_without_amount
+    if cat_alias:
+        desc = _remove_alias_once(text_without_amount, cat_alias)
+    return amount, cat, desc.strip()
 
 
 def find_category(text):
-    dict_val = load_data_from_file()
-    if not dict_val:
-        return "- Нераспознанное"
-
-    result_options = []
-
-    for key, value in dict_val.items():
-        clean_value_lower = value.lower()
-        clean_value_list = [part.strip() for part in clean_value_lower.split(",")]
-
-        for item in clean_value_list:
-
-            if item in text.lower() and item:
-                result_options.append((text.lower().index(item), len(item), key))
-
-    if not result_options:
-        cat = '- Нераспознанное'
-        return cat
-
-    result = result_options[0]
-
-    for idx, lens, cat in result_options:
-        if idx < result[0]:
-            result = (idx, lens, cat)
-
-    cat = result[2]
-
+    cat, _alias = _match_category_with_alias(text)
     return cat
 
-#print(find_args(text))
+
+def _normalize_text(text):
+    cleaned = text.lower().replace("ё", "е")
+    cleaned = re.sub(r"[^\w\s.,-]", " ", cleaned, flags=re.UNICODE)
+    cleaned = re.sub(r"\s+", " ", cleaned, flags=re.UNICODE).strip()
+    return cleaned
+
+
+def _extract_amount(text):
+    # Поддержка: 150 (как 150к), 150к, 150k, 120000, 120,5
+    match = re.search(r"(\d+(?:[.,]\d+)?)(?:\s*([кk]))?", text.lower())
+    if not match:
+        return 0, text
+
+    raw_num = match.group(1).replace(",", ".")
+    suffix = match.group(2)
+    try:
+        amount = float(raw_num)
+    except ValueError:
+        return 0, text
+
+    if suffix or amount < 1000:
+        amount *= 1000
+
+    text_without_amount = (text[:match.start()] + " " + text[match.end():]).strip()
+    text_without_amount = re.sub(r"\s+", " ", text_without_amount)
+    return amount, text_without_amount
+
+
+def _build_aliases_for_category(key, value):
+    aliases = []
+    base = key[3:] if key.startswith(" - ") else key
+    aliases.append(base.strip().lower())
+    for part in value.split(","):
+        alias = part.strip().lower()
+        if alias:
+            aliases.append(alias)
+    # Длинные алиасы проверяем первыми.
+    aliases = sorted(set(aliases), key=len, reverse=True)
+    return aliases
+
+
+def _match_category_with_alias(text):
+    dict_val = load_data_from_file()
+    if not dict_val:
+        return "- Нераспознанное", ""
+
+    normalized = _normalize_text(text)
+    best = None
+    for key, value in dict_val.items():
+        for alias in _build_aliases_for_category(key, value):
+            idx = normalized.find(alias)
+            if idx < 0:
+                continue
+            candidate = (idx, -len(alias), key, alias)
+            if best is None or candidate < best:
+                best = candidate
+
+    if best is None:
+        return "- Нераспознанное", ""
+    return best[2], best[3]
+
+
+def _remove_alias_once(text, alias):
+    pattern = re.compile(re.escape(alias), flags=re.IGNORECASE)
+    return pattern.sub("", text, count=1).strip()
