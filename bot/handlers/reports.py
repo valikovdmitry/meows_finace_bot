@@ -40,7 +40,7 @@ def _load_transactions():
 def _format_total_report(title, rows):
     total = sum(item["amount"] for item in rows)
     count = len(rows)
-    return f"{title}\nТранзакций: {count}\nСумма: {total:,.0f} VND".replace(",", " ")
+    return f"{title}\nТранзакций: {count}\nСумма: {total:,.2f} ₽".replace(",", " ")
 
 
 async def today_report(update: Update, context: CallbackContext) -> None:

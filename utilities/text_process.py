@@ -35,7 +35,7 @@ def _normalize_text(text):
 
 
 def _extract_amount(text):
-    # Поддержка: 150 (как 150к), 150к, 150k, 120000, 120,5
+    # Поддержка: 150, 150к, 150k, 120000, 120,5
     match = re.search(r"(\d+(?:[.,]\d+)?)(?:\s*([кk])\b)?", text.lower())
     if not match:
         return 0, text
@@ -47,7 +47,9 @@ def _extract_amount(text):
     except ValueError:
         return 0, text
 
-    if suffix or amount < 1000:
+    # Без суффикса значение трактуется как рубли "как есть".
+    # Суффикс к/k означает тысячи рублей.
+    if suffix:
         amount *= 1000
 
     text_without_amount = (text[:match.start()] + " " + text[match.end():]).strip()

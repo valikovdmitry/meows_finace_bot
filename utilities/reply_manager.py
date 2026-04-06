@@ -1,20 +1,22 @@
 def format_reply(m_sum, m_cat, m_desc, elapsed_seconds=None):
-    formated_vnd = sum_format(m_sum, 0)
-
-    rub = m_sum / 1000 * 3
-    formated_rub = sum_format(rub)
-
-    usd = rub / 83
-    formated_usd = sum_format(usd)
+    rub = float(m_sum)
+    vnd = rub / 3 * 1000
+    formatted_rub = sum_format(rub)
+    formatted_vnd = sum_format(vnd, 0)
+    category_label = m_cat[3:] if m_cat.startswith(" - ") else m_cat
+    note = m_desc if m_desc else "—"
 
     version_line = "Версия 1.0"
     if elapsed_seconds is not None:
         version_line = f"Версия 1.0 • {elapsed_seconds:.2f} сек"
 
-    if m_desc:
-        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\nПримечание: {m_desc}\n\nМявс! 🐾\n\n{version_line}"
-    else:
-        text = f"Так и запишемс! 🐾 \n\n<b>{m_cat[3:]}</b>\n{formated_vnd} VND\n{formated_rub} ₽\n{formated_usd} $\n\n\nМявс! 🐾\n\n{version_line}"
+    text = (
+        f"<b>{category_label}</b>\n"
+        f"Примечание: {note}\n\n"
+        f"{formatted_rub} ₽\n"
+        f"{formatted_vnd} VND\n\n"
+        f"{version_line}"
+    )
 
     return text
 

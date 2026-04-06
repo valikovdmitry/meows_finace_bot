@@ -89,18 +89,25 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
         return ConversationHandler.END
     m_sum = pending["m_sum"]
     m_desc = pending["m_desc"]
+    memory_desc = pending.get("memory_desc", m_desc)
     start_time = context.user_data.get("start_time")
     if m_cat == '- Нераспознанное':
         await update.effective_chat.send_message(
             "Хозяин, не вижу категорию, уточни! 🥺",
             reply_markup=build_category_keyboard(),
         )
-        context.user_data["pending_tx"] = {"m_sum": m_sum, "m_desc": m_desc}
+        context.user_data["pending_tx"] = {
+            "m_sum": m_sum,
+            "m_desc": m_desc,
+            "memory_desc": memory_desc,
+            "source_message_id": pending.get("source_message_id"),
+            "prompt_message_id": pending.get("prompt_message_id"),
+        }
         return WAITING_FOR_CATEGORY
     else:
         # Записываем данные в таблицу с обновленной категорией
         await asyncio.to_thread(_write_transaction_sync, m_sum, m_cat, m_desc)
-        await asyncio.to_thread(learn_category, m_desc, m_cat)
+        await asyncio.to_thread(learn_category, memory_desc, m_cat)
 
         # Подтверждаем запись и выводим введенные данные
         elapsed_time = None
@@ -146,8 +153,9 @@ async def handle_category_button(update: Update, context: CallbackContext) -> in
 
     m_sum = pending["m_sum"]
     m_desc = pending["m_desc"]
+    memory_desc = pending.get("memory_desc", m_desc)
     await asyncio.to_thread(_write_transaction_sync, m_sum, m_cat, m_desc)
-    await asyncio.to_thread(learn_category, m_desc, m_cat)
+    await asyncio.to_thread(learn_category, memory_desc, m_cat)
 
     start_time = context.user_data.get("start_time")
     elapsed_time = None
@@ -181,13 +189,19 @@ async def handle_post_save_action(update: Update, context: CallbackContext) -> i
             return ConversationHandler.END
 
         await asyncio.to_thread(_delete_last_transaction_sync)
-        context.user_data["pending_tx"] = {"m_sum": last_tx["m_sum"], "m_desc": last_tx["m_desc"]}
-        context.user_data["start_time"] = time.time()
-        await query.edit_message_reply_markup(reply_markup=None)
-        await update.effective_chat.send_message(
+        prompt_message = await update.effective_chat.send_message(
             "Удалил последнюю запись. Выбери новую категорию:",
             reply_markup=build_category_keyboard(),
         )
+        context.user_data["pending_tx"] = {
+            "m_sum": last_tx["m_sum"],
+            "m_desc": last_tx["m_desc"],
+            "memory_desc": last_tx["m_desc"],
+            "source_message_id": last_tx.get("source_message_id"),
+            "prompt_message_id": prompt_message.message_id,
+        }
+        context.user_data["start_time"] = time.time()
+        await query.edit_message_reply_markup(reply_markup=None)
         return WAITING_FOR_CATEGORY
 
     return ConversationHandler.END

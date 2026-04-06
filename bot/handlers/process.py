@@ -79,6 +79,7 @@ async def process_transaction_text(
     context.user_data["pending_tx"] = {
         "m_sum": m_sum,
         "m_desc": m_desc,
+        "memory_desc": m_desc,
         "source_message_id": source_message_id,
         "prompt_message_id": prompt_message.message_id,
     }
