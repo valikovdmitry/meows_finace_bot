@@ -56,7 +56,10 @@ def build_post_save_keyboard():
 
 def build_main_keyboard():
     return ReplyKeyboardMarkup(
-        [[KeyboardButton("Update"), KeyboardButton("Тест")]],
+        [
+            [KeyboardButton("Update"), KeyboardButton("Тест")],
+            [KeyboardButton("Дожим сейчас")],
+        ],
         resize_keyboard=True,
         one_time_keyboard=False,
     )

@@ -13,7 +13,7 @@ from config import TOKEN, BOT_TIMEZONE
 from bot.states import WAITING_FOR_CATEGORY
 from bot.handlers.start import start
 from bot.handlers.update import update
-from bot.handlers.shortcuts import quick_update, quick_test
+from bot.handlers.shortcuts import quick_update, quick_test, quick_reminder_now
 from bot.handlers.reminders import handle_reminder_reply, on_startup_schedule
 from bot.handlers.reports import today_report, week_report, month_report, category_report
 from bot.handlers.process import process_data
@@ -55,6 +55,7 @@ def main() -> None:
     application.add_handler(CommandHandler("update", update))
     application.add_handler(MessageHandler(filters.Regex("^Update$"), quick_update))
     application.add_handler(MessageHandler(filters.Regex("^Тест$"), quick_test))
+    application.add_handler(MessageHandler(filters.Regex("^Дожим сейчас$"), quick_reminder_now))
     application.add_handler(MessageHandler(filters.Regex("^(Да|Нет|да|нет)$"), handle_reminder_reply))
     application.add_handler(CommandHandler("today", today_report))
     application.add_handler(CommandHandler("week", week_report))

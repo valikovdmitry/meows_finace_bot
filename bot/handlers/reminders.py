@@ -129,6 +129,11 @@ def remember_chat(chat_id: int):
     set_primary_chat_id(chat_id)
 
 
+async def trigger_reminder_now(app: Application, chat_id: int):
+    set_primary_chat_id(chat_id)
+    await _start_cycle(app, chat_id)
+
+
 async def handle_reminder_reply(update: Update, context: CallbackContext) -> None:
     if not update.message or not update.effective_chat:
         return
