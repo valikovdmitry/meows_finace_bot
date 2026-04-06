@@ -21,7 +21,7 @@ def get_categories_for_keyboard():
 def build_category_keyboard(show_all=False):
     categories = get_categories_for_keyboard()
     if not show_all:
-        categories = categories[:8]
+        categories = categories[:6]
 
     rows = []
     row = []
@@ -37,7 +37,7 @@ def build_category_keyboard(show_all=False):
             row = []
     if row:
         rows.append(row)
-    if not show_all and len(get_categories_for_keyboard()) > 8:
+    if not show_all and len(get_categories_for_keyboard()) > 6:
         rows.append([InlineKeyboardButton(text="Показать все", callback_data="cat_show_all")])
     rows.append([InlineKeyboardButton(text="Отмена", callback_data="cat_cancel")])
     return InlineKeyboardMarkup(rows)
