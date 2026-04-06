@@ -1,4 +1,9 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
 from utilities.file_manager import load_data_from_file
 
@@ -13,8 +18,11 @@ def get_categories_for_keyboard():
     return result
 
 
-def build_category_keyboard():
+def build_category_keyboard(show_all=False):
     categories = get_categories_for_keyboard()
+    if not show_all:
+        categories = categories[:8]
+
     rows = []
     row = []
     for idx, category in enumerate(categories):
@@ -29,6 +37,8 @@ def build_category_keyboard():
             row = []
     if row:
         rows.append(row)
+    if not show_all and len(get_categories_for_keyboard()) > 8:
+        rows.append([InlineKeyboardButton(text="Показать все", callback_data="cat_show_all")])
     rows.append([InlineKeyboardButton(text="Отмена", callback_data="cat_cancel")])
     return InlineKeyboardMarkup(rows)
 
@@ -41,4 +51,12 @@ def build_post_save_keyboard():
                 InlineKeyboardButton(text="✏️ Изменить категорию", callback_data="edit_last"),
             ]
         ]
+    )
+
+
+def build_main_keyboard():
+    return ReplyKeyboardMarkup(
+        [[KeyboardButton("Update"), KeyboardButton("Тест")]],
+        resize_keyboard=True,
+        one_time_keyboard=False,
     )

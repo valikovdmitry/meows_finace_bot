@@ -14,3 +14,6 @@ CREDENTIALS_FILE = os.path.join(BASE_DIR, "data", "creds.json")
 
 # Путь к дамп файлу категорий
 SHEETS_DUMP_FILE = os.path.join(BASE_DIR, "data", "sheets_dump.json")
+
+# Память пользовательских соответствий "описание -> категория"
+CATEGORY_MEMORY_FILE = os.path.join(BASE_DIR, "data", "category_memory.json")

@@ -14,6 +14,7 @@ from bot.utilities.keyboards import (
 from sheets.auth import get_service
 from sheets.sheets_manager import delete_last_transaction, write_transaction
 from utilities.text_process import find_category
+from utilities.category_memory import learn_category
 from utilities.reply_manager import format_reply
 
 
@@ -69,6 +70,7 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
     else:
         # Записываем данные в таблицу с обновленной категорией
         await asyncio.to_thread(_write_transaction_sync, m_sum, m_cat, m_desc)
+        await asyncio.to_thread(learn_category, m_desc, m_cat)
 
         # Подтверждаем запись и выводим введенные данные
         elapsed_time = None
@@ -91,6 +93,10 @@ async def handle_category_button(update: Update, context: CallbackContext) -> in
 
     categories = get_categories_for_keyboard()
     data = query.data or ""
+    if data == "cat_show_all":
+        await query.edit_message_reply_markup(reply_markup=build_category_keyboard(show_all=True))
+        return WAITING_FOR_CATEGORY
+
     if data == "cat_cancel":
         context.user_data.pop("pending_tx", None)
         context.user_data.pop("start_time", None)
@@ -109,6 +115,7 @@ async def handle_category_button(update: Update, context: CallbackContext) -> in
     m_sum = pending["m_sum"]
     m_desc = pending["m_desc"]
     await asyncio.to_thread(_write_transaction_sync, m_sum, m_cat, m_desc)
+    await asyncio.to_thread(learn_category, m_desc, m_cat)
 
     start_time = context.user_data.get("start_time")
     elapsed_time = None

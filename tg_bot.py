@@ -11,6 +11,7 @@ from config import TOKEN
 from bot.states import WAITING_FOR_CATEGORY
 from bot.handlers.start import start
 from bot.handlers.update import update
+from bot.handlers.shortcuts import quick_update, quick_test
 from bot.handlers.reports import today_report, week_report, month_report, category_report
 from bot.handlers.process import process_data
 from bot.messages.conversation import (
@@ -43,12 +44,14 @@ def main() -> None:
     # Регистрируем обработчики команд
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("update", update))
+    application.add_handler(MessageHandler(filters.Regex("^Update$"), quick_update))
+    application.add_handler(MessageHandler(filters.Regex("^Тест$"), quick_test))
     application.add_handler(CommandHandler("today", today_report))
     application.add_handler(CommandHandler("week", week_report))
     application.add_handler(CommandHandler("month", month_report))
     application.add_handler(CommandHandler("category", category_report))
     application.add_handler(CallbackQueryHandler(handle_post_save_action, pattern=r"^(undo_last|edit_last)$"))
-    application.add_handler(CallbackQueryHandler(handle_category_button, pattern=r"^(catidx:\d+|cat_cancel)$"))
+    application.add_handler(CallbackQueryHandler(handle_category_button, pattern=r"^(catidx:\d+|cat_cancel|cat_show_all)$"))
     application.add_handler(conv_handler)
 
     # Запускаем бота
