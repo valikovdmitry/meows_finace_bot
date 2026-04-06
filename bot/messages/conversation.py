@@ -39,7 +39,7 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
         if start_time is not None:
             elapsed_time = time.time() - start_time
         reply_text = format_reply(m_sum, m_cat, m_desc, elapsed_time)
-        await update.message.reply_text(reply_text, parse_mode="HTML")
+        await update.effective_chat.send_message(reply_text, parse_mode="HTML")
         context.user_data.pop("start_time", None)
 
         return ConversationHandler.END

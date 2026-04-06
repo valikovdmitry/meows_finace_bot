@@ -61,7 +61,7 @@ async def process_data(update: Update, context: CallbackContext) -> int:
         elapsed_time = time.time() - start
         # Отправляем подтверждение и введенные данные
         reply_text = format_reply(m_sum, m_cat, m_desc, elapsed_time)
-        await update.message.reply_text(reply_text, parse_mode="HTML")
+        await update.effective_chat.send_message(reply_text, parse_mode="HTML")
 
         # Выводим время выполнения задачи
         print(f"Время выполнения: {elapsed_time:.2f} секунд")
