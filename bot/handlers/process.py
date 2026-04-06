@@ -25,7 +25,12 @@ def _write_transaction_sync(m_sum, m_cat, m_desc):
     write_transaction(m_sum, m_cat, m_desc, service)
 
 
-async def process_transaction_text(update: Update, context: CallbackContext, user_message: str) -> int:
+async def process_transaction_text(
+    update: Update,
+    context: CallbackContext,
+    user_message: str,
+    source_message_id: int | None = None,
+) -> int:
     start = time.time()
     # Обработка данных на предмет текстовой команды
     if user_message.lower() == "удали":
@@ -48,22 +53,35 @@ async def process_transaction_text(update: Update, context: CallbackContext, use
         await update.effective_chat.send_message("Добавь описание после суммы. Пример: 150 кофе")
         return ConversationHandler.END
 
+    if source_message_id is None and update.message:
+        source_message_id = update.message.message_id
+
     predicted_category = await asyncio.to_thread(predict_category, m_desc)
     if predicted_category:
         await asyncio.to_thread(_write_transaction_sync, m_sum, predicted_category, m_desc)
         await asyncio.to_thread(learn_category, m_desc, predicted_category)
         elapsed_time = time.time() - start
-        await update.effective_chat.send_message(
-            f"Категория выбрана автоматически: {predicted_category[3:] if predicted_category.startswith(' - ') else predicted_category}"
+        await send_success_message(
+            update,
+            context,
+            m_sum,
+            predicted_category,
+            m_desc,
+            elapsed_time,
+            source_message_id=source_message_id,
         )
-        await send_success_message(update, context, m_sum, predicted_category, m_desc, elapsed_time)
         return ConversationHandler.END
 
-    await update.effective_chat.send_message(
+    prompt_message = await update.effective_chat.send_message(
         "Выбери категорию:",
         reply_markup=build_category_keyboard(),
     )
-    context.user_data["pending_tx"] = {"m_sum": m_sum, "m_desc": m_desc}
+    context.user_data["pending_tx"] = {
+        "m_sum": m_sum,
+        "m_desc": m_desc,
+        "source_message_id": source_message_id,
+        "prompt_message_id": prompt_message.message_id,
+    }
     context.user_data["start_time"] = start
     return WAITING_FOR_CATEGORY
 

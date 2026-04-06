@@ -10,6 +10,6 @@ async def quick_update(update_obj: Update, context: CallbackContext) -> None:
 
 
 async def quick_test(update_obj: Update, context: CallbackContext) -> None:
-    test_text = "100, coffee out"
-    await update_obj.effective_chat.send_message(test_text)
-    await process_transaction_text(update_obj, context, test_text)
+    test_text = "100 кофе"
+    sent = await update_obj.effective_chat.send_message(test_text)
+    await process_transaction_text(update_obj, context, test_text, source_message_id=sent.message_id)
