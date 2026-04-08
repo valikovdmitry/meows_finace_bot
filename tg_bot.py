@@ -61,6 +61,7 @@ def main() -> None:
         states={
             WAITING_FOR_CATEGORY: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_category),
+                CallbackQueryHandler(handle_category_button, pattern=r"^(catidx:\d+|cat_cancel|cat_show_all)$"),
             ],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
@@ -98,7 +99,6 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(handle_custom_reminder_ok, pattern=r"^reminder_ok:"))
     application.add_handler(reminder_conv_handler)
     application.add_handler(CallbackQueryHandler(handle_post_save_action, pattern=r"^(undo_last|edit_last)$"))
-    application.add_handler(CallbackQueryHandler(handle_category_button, pattern=r"^(catidx:\d+|cat_cancel|cat_show_all)$"))
     application.add_handler(conv_handler)
 
     # Запускаем бота

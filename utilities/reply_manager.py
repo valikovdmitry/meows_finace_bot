@@ -6,9 +6,9 @@ def format_reply(m_sum, m_cat, m_desc, elapsed_seconds=None):
     category_label = m_cat[3:] if m_cat.startswith(" - ") else m_cat
     note = m_desc if m_desc else "—"
 
-    version_line = "Версия 1.0"
+    version_line = "Версия 1.1"
     if elapsed_seconds is not None:
-        version_line = f"Версия 1.0 • {elapsed_seconds:.2f} сек"
+        version_line = f"Версия 1.1 • {elapsed_seconds:.2f} сек"
 
     text = (
         f"<b>{category_label}</b>\n"
