@@ -57,7 +57,10 @@ def main() -> None:
 
     # Определяем ConversationHandler
     conv_handler = ConversationHandler(
-        entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND, process_data)],
+        entry_points=[
+            MessageHandler(filters.TEXT & ~filters.COMMAND, process_data),
+            CallbackQueryHandler(handle_post_save_action, pattern=r"^(undo_last|edit_last)$"),
+        ],
         states={
             WAITING_FOR_CATEGORY: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_category),
@@ -98,7 +101,6 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(reminder_delete, pattern=r"^reminder_delete:"))
     application.add_handler(CallbackQueryHandler(handle_custom_reminder_ok, pattern=r"^reminder_ok:"))
     application.add_handler(reminder_conv_handler)
-    application.add_handler(CallbackQueryHandler(handle_post_save_action, pattern=r"^(undo_last|edit_last)$"))
     application.add_handler(conv_handler)
 
     # Запускаем бота

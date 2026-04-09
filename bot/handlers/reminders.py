@@ -158,12 +158,12 @@ async def handle_reminder_reply(update: Update, context: CallbackContext) -> Non
     if not state.get("active") or state.get("chat_id") != chat_id:
         return
 
-    # Во время выбора категории не перехватываем "да/нет" как ответ на напоминание.
-    if context.user_data.get("pending_tx"):
-        return
-
     answer = (update.message.text or "").strip().lower()
     if answer not in ("да", "нет"):
+        return
+    # Во время выбора категории оставляем возможность остановить цикл напоминаний через "нет",
+    # чтобы не застревать в бесконечных повторах из-за зависшего pending_tx.
+    if context.user_data.get("pending_tx") and answer == "да":
         return
 
     await _safe_delete_by_id(context.bot, chat_id, state.get("question_message_id"))

@@ -105,6 +105,8 @@ async def handle_category(update: Update, context: CallbackContext) -> int:
         }
         return WAITING_FOR_CATEGORY
     else:
+        if pending.get("replace_last"):
+            await asyncio.to_thread(_delete_last_transaction_sync)
         # Записываем данные в таблицу с обновленной категорией
         await asyncio.to_thread(_write_transaction_sync, m_sum, m_cat, m_desc)
         await asyncio.to_thread(learn_category, memory_desc, m_cat)
@@ -136,8 +138,22 @@ async def handle_category_button(update: Update, context: CallbackContext) -> in
         return WAITING_FOR_CATEGORY
 
     if data == "cat_cancel":
-        await _safe_delete_message(update, pending.get("source_message_id"))
         await _safe_delete_message(update, pending.get("prompt_message_id"))
+        if pending.get("replace_last"):
+            original_cat = pending.get("original_cat")
+            if not original_cat:
+                original_cat = "- Нераспознанное"
+            await send_success_message(
+                update,
+                context,
+                pending["m_sum"],
+                original_cat,
+                pending["m_desc"],
+                None,
+                source_message_id=pending.get("source_message_id"),
+            )
+        else:
+            await _safe_delete_message(update, pending.get("source_message_id"))
         context.user_data.pop("pending_tx", None)
         context.user_data.pop("start_time", None)
         return ConversationHandler.END
@@ -154,6 +170,8 @@ async def handle_category_button(update: Update, context: CallbackContext) -> in
     m_sum = pending["m_sum"]
     m_desc = pending["m_desc"]
     memory_desc = pending.get("memory_desc", m_desc)
+    if pending.get("replace_last"):
+        await asyncio.to_thread(_delete_last_transaction_sync)
     await asyncio.to_thread(_write_transaction_sync, m_sum, m_cat, m_desc)
     await asyncio.to_thread(learn_category, memory_desc, m_cat)
 
@@ -188,9 +206,8 @@ async def handle_post_save_action(update: Update, context: CallbackContext) -> i
             await update.effective_chat.send_message("Не нашел последнюю транзакцию для редактирования.")
             return ConversationHandler.END
 
-        await asyncio.to_thread(_delete_last_transaction_sync)
         prompt_message = await update.effective_chat.send_message(
-            "Удалил последнюю запись. Выбери новую категорию:",
+            "Выбери новую категорию:",
             reply_markup=build_category_keyboard(),
         )
         context.user_data["pending_tx"] = {
@@ -199,6 +216,8 @@ async def handle_post_save_action(update: Update, context: CallbackContext) -> i
             "memory_desc": last_tx["m_desc"],
             "source_message_id": last_tx.get("source_message_id"),
             "prompt_message_id": prompt_message.message_id,
+            "replace_last": True,
+            "original_cat": last_tx["m_cat"],
         }
         context.user_data["start_time"] = time.time()
         await query.edit_message_reply_markup(reply_markup=None)
