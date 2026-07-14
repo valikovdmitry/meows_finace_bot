@@ -8,6 +8,12 @@ load_dotenv()
 TOKEN = os.getenv("TOKEN")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 BOT_TIMEZONE = os.getenv("BOT_TIMEZONE", "Asia/Ho_Chi_Minh")
+DAILY_EXPENSE_REMINDERS_ENABLED = os.getenv("DAILY_EXPENSE_REMINDERS_ENABLED", "false").lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
 
 # Путь к Google API ключу
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -6,7 +6,7 @@ from telegram.ext import Application, CallbackContext
 
 from bot.utilities.keyboards import build_main_keyboard
 from bot.handlers.custom_reminders import schedule_all_custom_reminders
-from config import BOT_TIMEZONE
+from config import BOT_TIMEZONE, DAILY_EXPENSE_REMINDERS_ENABLED
 from utilities.runtime_state import get_primary_chat_id, set_primary_chat_id
 
 
@@ -115,6 +115,9 @@ async def _delete_message_job(context: CallbackContext):
 
 
 def ensure_daily_jobs(app: Application):
+    if not DAILY_EXPENSE_REMINDERS_ENABLED:
+        return
+
     state = _state(app)
     if state.get("daily_registered"):
         return
