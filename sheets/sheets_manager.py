@@ -33,6 +33,27 @@ def write_transaction(amount, category, description, service):
     print(f"Данные записаны в диапазон {updated_range}: {data_to_write}")
 
 
+def write_transactions(transactions, service):
+    """Append several already-normalized transactions in one Sheets request."""
+    now = datetime.datetime.now()
+    transaction_date = now.date().strftime("%d.%m.%Y")
+    transaction_time = now.strftime("%H:%M:%S")
+    rows = []
+    for index, (amount, category, description) in enumerate(transactions):
+        transaction_id = (now + datetime.timedelta(microseconds=index)).strftime("%Y%m%d%H%M%S%f")
+        rows.append([transaction_id, transaction_date, transaction_time, amount, category, description])
+
+    response = service.spreadsheets().values().append(
+        spreadsheetId=SPREADSHEET_ID,
+        range="A:F",
+        valueInputOption="USER_ENTERED",
+        insertDataOption="INSERT_ROWS",
+        body={"values": rows},
+    ).execute()
+    updated_range = response.get("updates", {}).get("updatedRange", "A:F")
+    print(f"Пакет из {len(rows)} транзакций записан в диапазон {updated_range}")
+
+
 # Удаление последней транзакции
 def delete_last_transaction(service, SPREADSHEET_ID):
     result = service.spreadsheets().values().get(

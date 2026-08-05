@@ -32,7 +32,7 @@ from bot.handlers.reminder_setup import (
 )
 from bot.handlers.custom_reminders import handle_custom_reminder_ok
 from bot.handlers.reports import today_report, week_report, month_report, category_report
-from bot.handlers.process import process_data, process_voice_data
+from bot.handlers.process import handle_batch_action, process_data, process_photo_data, process_voice_data
 from bot.messages.conversation import (
     handle_category,
     handle_post_save_action,
@@ -60,6 +60,7 @@ def main() -> None:
         entry_points=[
             MessageHandler(filters.TEXT & ~filters.COMMAND, process_data),
             MessageHandler(filters.VOICE, process_voice_data),
+            MessageHandler(filters.PHOTO, process_photo_data),
             CallbackQueryHandler(handle_post_save_action, pattern=r"^(undo_last|edit_last)$"),
         ],
         states={
@@ -103,6 +104,7 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(handle_custom_reminder_ok, pattern=r"^reminder_ok:"))
     application.add_handler(reminder_conv_handler)
     application.add_handler(conv_handler)
+    application.add_handler(CallbackQueryHandler(handle_batch_action, pattern=r"^batch_(save|cancel):"))
 
     # Запускаем бота
     application.run_polling()
