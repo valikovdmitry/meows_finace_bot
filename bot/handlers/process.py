@@ -15,7 +15,13 @@ from sheets.auth import get_service
 from sheets.sheets_manager import delete_last_transaction, write_transaction, write_transactions
 from utilities.category_memory import predict_category, learn_category
 from utilities.text_process import find_amount_and_description
-from utilities.voice_expense import VoiceExpense, parse_expenses, parse_receipt_image, transcribe_voice
+from utilities.voice_expense import (
+    VoiceExpense,
+    group_expenses_by_category,
+    parse_expenses,
+    parse_receipt_image,
+    transcribe_voice,
+)
 
 
 def _delete_last_transaction_sync():
@@ -209,6 +215,7 @@ async def process_voice_data(update: Update, context: CallbackContext) -> int:
             transcript,
             get_categories_for_keyboard(),
         )
+        expenses = group_expenses_by_category(expenses)
     except Exception as exc:
         print(f"Не удалось обработать голосовое сообщение: {exc}")
         await status.edit_text("Не смог разобрать голосовое. Попробуй ещё раз или отправь трату текстом.")
@@ -283,6 +290,7 @@ async def process_photo_data(update: Update, context: CallbackContext) -> int:
             "image/jpeg",
             get_categories_for_keyboard(),
         )
+        expenses = group_expenses_by_category(expenses)
     except Exception as exc:
         print(f"Не удалось обработать фото чека: {exc}")
         await status.edit_text("Не смог прочитать чек. Попробуй фото крупнее и без бликов.")
