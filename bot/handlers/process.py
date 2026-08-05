@@ -130,7 +130,10 @@ async def process_voice_data(update: Update, context: CallbackContext) -> int:
         await status.edit_text("Не смог разобрать голосовое. Попробуй ещё раз или отправь трату текстом.")
         return ConversationHandler.END
 
-    await status.edit_text(f"Распознано: {expense.transcript}")
+    recognized_text = f"Распознано: {expense.transcript}"
+    if expense.source_currency == "VND":
+        recognized_text += f"\nКонвертация: {expense.source_amount} VND → {expense.amount_rub} ₽"
+    await status.edit_text(recognized_text)
     if expense.category:
         amount, category, description = expense.transaction_fields()
         await asyncio.to_thread(_write_transaction_sync, amount, category, description)
