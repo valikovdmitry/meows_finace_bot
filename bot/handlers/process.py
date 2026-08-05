@@ -1,18 +1,20 @@
 import time
 import asyncio
+from io import BytesIO
 
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-from config import SPREADSHEET_ID
+from config import OPENAI_API_KEY, SPREADSHEET_ID
 from bot.states import WAITING_FOR_CATEGORY
-from bot.utilities.keyboards import build_category_keyboard
+from bot.utilities.keyboards import build_category_keyboard, get_categories_for_keyboard
 from bot.utilities.delete import delete_last_three_messages
 from bot.messages.conversation import send_success_message
 from sheets.auth import get_service
 from sheets.sheets_manager import delete_last_transaction, write_transaction
 from utilities.category_memory import predict_category, learn_category
 from utilities.text_process import find_amount_and_description
+from utilities.voice_expense import parse_expense, transcribe_voice
 
 
 def _delete_last_transaction_sync():
@@ -91,3 +93,70 @@ async def process_data(update: Update, context: CallbackContext) -> int:
     user_message = update.message.text
     print(user_message)
     return await process_transaction_text(update, context, user_message)
+
+
+async def process_voice_data(update: Update, context: CallbackContext) -> int:
+    """Transcribe a Telegram voice message and save the extracted expense."""
+    start = time.time()
+    if not OPENAI_API_KEY:
+        await update.effective_chat.send_message(
+            "Голосовые траты пока не настроены: добавь OPENAI_API_KEY в .env и перезапусти бота."
+        )
+        return ConversationHandler.END
+
+    message = update.message
+    if message is None or message.voice is None:
+        return ConversationHandler.END
+
+    status = await update.effective_chat.send_message("Распознаю голосовое сообщение…")
+    try:
+        telegram_file = await context.bot.get_file(message.voice.file_id)
+        audio = BytesIO()
+        await telegram_file.download_to_memory(out=audio)
+        transcript = await asyncio.to_thread(
+            transcribe_voice,
+            OPENAI_API_KEY,
+            audio.getvalue(),
+            "voice.ogg",
+        )
+        expense = await asyncio.to_thread(
+            parse_expense,
+            OPENAI_API_KEY,
+            transcript,
+            get_categories_for_keyboard(),
+        )
+    except Exception as exc:
+        print(f"Не удалось обработать голосовое сообщение: {exc}")
+        await status.edit_text("Не смог разобрать голосовое. Попробуй ещё раз или отправь трату текстом.")
+        return ConversationHandler.END
+
+    await status.edit_text(f"Распознано: {expense.transcript}")
+    if expense.category:
+        amount, category, description = expense.transaction_fields()
+        await asyncio.to_thread(_write_transaction_sync, amount, category, description)
+        await asyncio.to_thread(learn_category, description, category)
+        await send_success_message(
+            update,
+            context,
+            amount,
+            category,
+            description,
+            time.time() - start,
+            source_message_id=message.message_id,
+        )
+        return ConversationHandler.END
+
+    amount = float(expense.amount_rub)
+    prompt_message = await update.effective_chat.send_message(
+        "Не смог уверенно выбрать категорию. Выбери её:",
+        reply_markup=build_category_keyboard(),
+    )
+    context.user_data["pending_tx"] = {
+        "m_sum": amount,
+        "m_desc": expense.description,
+        "memory_desc": expense.description,
+        "source_message_id": message.message_id,
+        "prompt_message_id": prompt_message.message_id,
+    }
+    context.user_data["start_time"] = time.time()
+    return WAITING_FOR_CATEGORY

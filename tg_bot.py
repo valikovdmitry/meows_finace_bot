@@ -32,7 +32,7 @@ from bot.handlers.reminder_setup import (
 )
 from bot.handlers.custom_reminders import handle_custom_reminder_ok
 from bot.handlers.reports import today_report, week_report, month_report, category_report
-from bot.handlers.process import process_data
+from bot.handlers.process import process_data, process_voice_data
 from bot.messages.conversation import (
     handle_category,
     handle_post_save_action,
@@ -59,6 +59,7 @@ def main() -> None:
     conv_handler = ConversationHandler(
         entry_points=[
             MessageHandler(filters.TEXT & ~filters.COMMAND, process_data),
+            MessageHandler(filters.VOICE, process_voice_data),
             CallbackQueryHandler(handle_post_save_action, pattern=r"^(undo_last|edit_last)$"),
         ],
         states={
