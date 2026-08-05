@@ -103,26 +103,25 @@ def _is_misc_category(category: str | None) -> bool:
 
 
 def _apply_grocery_category_safety_net(category: str | None, description: str, categories: list[str]) -> str | None:
-    """Keep a generic fallback category from swallowing identifiable groceries."""
-    if not _is_misc_category(category):
-        return category
+    """Correct fallback and false-junk categories for identifiable groceries."""
     text = description.casefold().replace("ё", "е")
     harmful_terms = (
         "пиво", "вино", "алкогол", "beer", "wine", "whisky", "vodka",
         "конфет", "шоколад", "чипс", "снек", "печень", "десерт", "candy",
         "chocolate", "chips", "snack", "cookie", "dessert",
     )
-    explicitly_non_alcoholic = "безалкогол" in text or "non-alcohol" in text
-    if any(term in text for term in harmful_terms) and not explicitly_non_alcoholic:
-        return _match_category("вредная еда", categories) or category
-
     grocery_terms = (
         "вода", "молок", "напит", "сок", "чай", "кофе", "хлеб", "овощ", "фрукт",
         "мяс", "рыб", "яйц", "рис", "макарон", "продукт", "water", "milk", "drink",
         "beverage", "soda", "juice", "tea", "coffee", "bread", "vegetable", "fruit",
         "meat", "fish", "egg", "rice", "pasta", "grocery",
     )
-    if any(term in text for term in grocery_terms):
+    explicitly_non_alcoholic = "безалкогол" in text or "non-alcohol" in text
+    is_harmful_product = any(term in text for term in harmful_terms) and not explicitly_non_alcoholic
+    is_grocery = any(term in text for term in grocery_terms)
+    if is_harmful_product and _is_misc_category(category):
+        return _match_category("вредная еда", categories) or category
+    if is_grocery and (_is_misc_category(category) or "вредн" in (category or "").casefold()):
         return _match_category("нормальная еда", categories) or category
     return category
 
