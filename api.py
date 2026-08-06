@@ -28,7 +28,9 @@ def _authorize(api_key: str | None) -> None:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="BOT_API_KEY is not configured",
         )
-    if not api_key or not secrets.compare_digest(api_key, BOT_API_KEY):
+    if not api_key or not secrets.compare_digest(
+        api_key.encode("utf-8"), BOT_API_KEY.encode("utf-8")
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API key",
