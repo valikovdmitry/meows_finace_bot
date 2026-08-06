@@ -13,7 +13,7 @@ from config import TOKEN, BOT_TIMEZONE
 from bot.states import WAITING_FOR_CATEGORY
 from bot.handlers.start import start
 from bot.handlers.update import update
-from bot.handlers.shortcuts import quick_update, quick_test, quick_reminder_now
+from bot.handlers.shortcuts import quick_update, quick_test, quick_reminder_now, send_test_message
 from bot.handlers.reminders import handle_reminder_reply, on_startup_schedule
 from bot.handlers.reminder_setup import (
     ASK_DATE,
@@ -91,6 +91,7 @@ def main() -> None:
     # Регистрируем обработчики команд
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("update", update))
+    application.add_handler(CommandHandler("test", send_test_message))
     application.add_handler(CommandHandler("reminders", reminders_list))
     application.add_handler(MessageHandler(filters.Regex("^Update$"), quick_update))
     application.add_handler(MessageHandler(filters.Regex("^Тест$"), quick_test))
